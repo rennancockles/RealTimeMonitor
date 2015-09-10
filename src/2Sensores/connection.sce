@@ -7,4 +7,4 @@ if port_name==[] then
 end 
 //
 global %serial_port
-%serial_port=openserial(port_name,"19200,n,8,1");
+%serial_port=openserial(port_name,"9600,n,8,1");

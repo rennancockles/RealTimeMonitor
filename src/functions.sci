@@ -26,7 +26,6 @@ endfunction
 function stopSensor()
     global %Acquisition
     %Acquisition = %f;
-    //set(acqButton, "value", 2);
 endfunction
 //
 function launchSensor()
