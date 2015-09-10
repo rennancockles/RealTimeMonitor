@@ -1,9 +1,9 @@
-//* Projeto final do curso de Engenharia de Computação do 
-//*Instituto Politécnico da Universidade Estadual do Rio de 
+//* Projeto final do curso de Engenharia de Computação do
+//*Instituto Politécnico da Universidade Estadual do Rio de
 //*Janeiro (IPRJ-UERJ).
 //
 //*Aluno: Rennan Cockles
-//*Orientador: José Humberto Zani 
+//*Orientador: José Humberto Zani
 //
 
 close
@@ -39,6 +39,7 @@ minRegulationDisplay = minTempDisplay + 273.15;
 maxRegulationDisplay = maxTempDisplay + 273.15;
 //
 exec("..\..\etc\Serial_Communication_Toolbox\0.4.1-2\loader.sce", -1)
+exec("..\..\etc\JSON\loader.sce", -1)
 //exec("connection.sce", -1)
 exec("monitoring.sce", -1)
 exec("monitoring2.sce", -1)

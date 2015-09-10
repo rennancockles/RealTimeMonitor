@@ -1,9 +1,9 @@
-//* Projeto final do curso de Engenharia de Computação do 
-//*Instituto Politécnico da Universidade Estadual do Rio de 
+//* Projeto final do curso de Engenharia de Computação do
+//*Instituto Politécnico da Universidade Estadual do Rio de
 //*Janeiro (IPRJ-UERJ).
 //
 //*Aluno: Rennan Cockles
-//*Orientador: José Humberto Zani 
+//*Orientador: José Humberto Zani
 //
 
 close
