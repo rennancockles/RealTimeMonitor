@@ -30,7 +30,7 @@ maxTempDisplay = 45;
 minRegulationDisplay = minTempDisplay + 273.15;
 maxRegulationDisplay = maxTempDisplay + 273.15;
 //
-exec("..\etc\Serial_Communication_Toolbox\0.4.1-2\loader.sce", -1)
+exec("..\etc\ScilabLib\Serial_Communication_Toolbox\0.4.1-2\loader.sce", -1)
 //exec("connection.sce", -1)
 exec("monitoring.sce", -1)
 exec("5minVar.sce", -1)

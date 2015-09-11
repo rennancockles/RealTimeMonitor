@@ -1,3 +1,5 @@
+funcprot(0)
+//
 function changeMinTemp()
     global %MinTemp
     e = findobj("tag", "minTempSlider");
@@ -57,62 +59,73 @@ function launchSensor()
     %Acquisition = %t;
     readserial(%serial_port);
     //
-    while %Acquisition 
-        values = [];
-        value = ascii(0);
-        v="";
-        v2="";
-        //        
-        while (value ~= "!") do
-            value=readserial(%serial_port,1);
-        end
-        //
-        if (value == "!") then
-            while (value ~= ascii(13)) do
-                value=readserial(%serial_port,1);
-                //
-                if (value == ascii(13)) then
-                    break;
-                end
-                //
-                values=values+value;
-                v=strsubst(values,string(ascii(10)),'')
-                v=strsubst(v,string(ascii(13)),'')
-                dado=evstr(v)
-            end
-        end
-        //
-        values = [];
-        while (value ~= "?") do
-            value=readserial(%serial_port,1);
-        end
-        //
-        if (value == "?") then
-            while (value ~= ascii(13)) do
-                value=readserial(%serial_port,1);
-                //
-                if (value == ascii(13)) then
-                    break;
-                end
-                //
-                values=values+value;
-                v2=strsubst(values,string(ascii(10)),'')
-                v2=strsubst(v2,string(ascii(13)),'')
-                dado2=evstr(v2)
-            end
-        end
-        //
-        if (v~="" & v2~="") then
-            xinfo("Temp1 = "+v+"°C / "+string(dado+273.15)+" K" + ...
-            "  |  Temp2 = "+v2+"°C / "+string(dado+273.15)+" K");
-            %data = [%data dado]
-            %data2 = [%data2 dado2]
-            %time = length(%data)-1
-            %temp = dado;
-            %temp2 = dado2;
-            updateSensorValue(dado, dado2);
-        end
+    while(%Acquisition)
+    //
+    values = [];
+    value = ascii(0);
+    ln = 1;
+    v="";
+    v2="";
+    //        
+    while (value ~= "{") do
+        value = readserial(%serial_port,1);
     end
+    //
+    if (value == '{') then
+        values(ln,1) = value;
+    end
+    //
+    while (value ~= '}') do
+        value =  readserial(%serial_port,1);
+        //
+        if (ascii(value) < 33 | ascii(value) > 125) then
+            ln = ln+1;
+            while(ascii(value) < 33 | ascii(value) > 125)
+                value = readserial(%serial_port,1);
+            end
+            //
+            values(ln,1) = value;
+            continue
+        end
+        //
+        values(ln,1) = values(ln,1) + value;
+    end
+    //
+    json = JSONParse(values);
+    //
+    if (json.sensors(1) == 1) then
+        v=json.temp(1);
+    end
+    //
+    if (json.sensors(2) == 1) then
+        v2=json.temp(2);
+    end
+    //
+    if (v~="" & v2~="") then
+        xinfo("Temp1 = "+string(v)+"°C / "+string(v+273.15)+" K" + ...
+        "  |  Temp2 = "+string(v2)+"°C / "+string(v2+273.15)+" K");
+        %data = [%data v]
+        %data2 = [%data2 v2]
+        %time = length(%data)-1
+        %temp = v;
+        %temp2 = v2;
+        updateSensorValue(v, v2);
+    elseif (v~="" & v2=="") then
+        xinfo("Temp1 = "+string(v)+"°C / "+string(v+273.15)+" K");
+        %data = [%data v]
+        %data2 = [%data2 -1]
+        %time = length(%data)-1
+        %temp = v;
+        updateSensorValue(v, -1);
+    elseif (v=="" & v2~="") then
+        xinfo("Temp2 = "+string(v2)+"°C / "+string(v2+273.15)+" K");
+        %data = [%data -1]
+        %data2 = [%data2 v2]
+        %time = length(%data)-1
+        %temp2 = v2;
+        updateSensorValue(-1, v2);
+    end
+end
 endfunction
 //
 function updateSensorValue(data, data2)
