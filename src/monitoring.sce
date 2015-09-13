@@ -1,18 +1,19 @@
 f=figure("dockable","off", "menubar", "none");
+f.figure_position = [25, 58];
 f.figure_name="Real-time Temperature Monitoring and Control";
-f.figure_size = [1000 700];
+f.figure_size = [1200 700];
 f.background = color(246,244,242);
 f.resize="off";
 f.menubar_visible="on";
 f.toolbar_visible="off";
-f.closerequestfcn="closeFigure";
 f.info_message=f.figure_name
 f.tag="mainWindow";
+f.closerequestfcn="closeFigure";
 //
 bar(.5,0,'blue');
-e = gce();
-e = e.children(1);
-e.tag = "instantSensor";
+ge = gce();
+ge = ge.children(1);
+ge.tag = "instantSensor";
 //
 plot([0, 1], [%MinTemp, %MinTemp]);
 e = gce();
@@ -31,8 +32,9 @@ e.thickness = 2;
 e.foreground = color("red");
 //
 a = gca();
-a.data_bounds = [0, 0; 1, 45];
+a.data_bounds = [0, minTempDisplay; 1, maxTempDisplay];
 a.grid = [-1, color("darkgrey")];
-a.axes_bounds = [0.1, 0.105, 0.25, .95];
+a.axes_bounds = [0.05, 0.105, 0.25, .95];
 a.axes_visible(1) = "off";
 a.tag = "liveAxes";
+a.tight_limits="on";

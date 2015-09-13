@@ -1,3 +1,162 @@
+funcprot(0)
+//
+function launchSensor()
+    global %MaxTemp
+    global %MaxTemp2
+    global %serial_port
+    global %Acquisition
+    global %time
+    global %temp
+    global %temp2
+    global %data
+    global %data2
+    %Acquisition = %t;
+    readserial(%serial_port);
+    //
+    while(%Acquisition)
+        //
+        values = [];
+        value = ascii(0);
+        ln = 1;
+        v="";
+        v2="";
+        //        
+        while (value ~= "{") do
+            value = readserial(%serial_port,1);
+        end
+        //
+        if (value == '{') then
+            values(ln,1) = value;
+        end
+        //
+        while (value ~= '}') do
+            value =  readserial(%serial_port,1);
+            //
+            if (ascii(value) < 33 | ascii(value) > 125) then
+                ln = ln+1;
+                while(ascii(value) < 33 | ascii(value) > 125)
+                    value = readserial(%serial_port,1);
+                end
+                //
+                values(ln,1) = value;
+                continue
+            end
+            //
+            values(ln,1) = values(ln,1) + value;
+        end
+        //
+        json = JSONParse(values);
+        //
+        if (json.sensors(1) == 1) then
+            v=json.temp(1);
+        end
+        //
+        if (json.sensors(2) == 1) then
+            v2=json.temp(2);
+        end
+        //
+        if (v~="" & v2~="") then
+            xinfo("Temp1 = "+string(v)+"°C / "+string(v+273.15)+" K" + ...
+            "     |     Temp2 = "+string(v2)+"°C / "+string(v2+273.15)+" K");
+            %data = [%data v]
+            %data2 = [%data2 v2]
+            %time = length(%data)-1
+            %temp = v;
+            %temp2 = v2;
+            updateSensorValue(v, v2);
+        elseif (v~="" & v2=="") then
+            xinfo("Temp1 = "+string(v)+"°C / "+string(v+273.15)+" K");
+            %data = [%data v]
+            %data2 = [%data2 -1]
+            %time = length(%data)-1
+            %temp = v;             
+            %temp2 = -1;
+            updateSensorValue(v, -1);
+        elseif (v=="" & v2~="") then
+            xinfo("Temp2 = "+string(v2)+"°C / "+string(v2+273.15)+" K");
+            %data = [%data -1]
+            %data2 = [%data2 v2]
+            %time = length(%data)-1
+            %temp = -1;           
+            %temp2 = v2;
+            updateSensorValue(-1, v2);
+        end
+    end
+endfunction
+//
+function stopSensor()
+    global %Acquisition
+    %Acquisition = %f;
+endfunction
+//
+function closeFigure()
+    stopSensor();
+    exportValues();
+    global %serial_port
+    closeserial(%serial_port);
+    f = findobj("tag", "mainWindow");
+    delete(f);
+endfunction
+//
+function updateSensorValue(data, data2)
+    global %MaxTemp
+    global %MaxTemp2
+    global %MinTemp
+    global %MinTemp2
+    //
+    if data ~= -1 then
+        e = findobj("tag", "instantSensor");
+        e.data(2) = data;
+        if data > %MaxTemp then
+            e.background = color("red");
+        elseif data < %MinTemp  then
+            e.background = color("blue");
+        else
+            e.background = color("green");
+        end
+        //
+        e = findobj("tag", "Sensor1");
+        lastPoints = e.data(:, 2);
+        e.data(:, 2) = [data ; lastPoints(1:$-1)];
+    end
+    //
+    if data2 ~= -1 then
+        e = findobj("tag", "instantSensor2");
+        e.data(2) = data2;
+        if data2 > %MaxTemp2 then
+            e.background = color("red");
+        elseif data2 < %MinTemp2  then
+            e.background = color("blue");
+        else
+            e.background = color("green");
+        end
+        //
+        e = findobj("tag", "Sensor2");
+        lastPoints = e.data(:, 2);
+        e.data(:, 2) = [data2 ; lastPoints(1:$-1)];
+    end
+    //
+    update();
+endfunction
+//
+function update()
+    global %temp
+    global %temp2
+    global %time
+    //
+    if %temp ~= -1 then
+        set(tempValue, "string", string(%temp)+"ºC", "fontsize", 25);
+        //
+        set(timeValue, "string", string(%time)+"s", "fontsize", 25);
+    end
+    //
+    if %temp2 ~= -1 then
+        set(tempValue2, "string", string(%temp2)+"ºC", "fontsize", 25);
+        //
+        set(timeValue2, "string", string(%time)+"s", "fontsize", 25);
+    end
+endfunction
+//
 function changeMinTemp()
     global %MinTemp
     e = findobj("tag", "minTempSlider");
@@ -14,85 +173,20 @@ function changeMaxTemp()
     e.data(:,2) = %MaxTemp;
 endfunction
 //
-function closeFigure()
-    stopSensor();
-    exportValues();
-    global %serial_port
-    closeserial(%serial_port);
-    f = findobj("tag", "mainWindow");
-    delete(f);
+function changeMinTemp2()
+    global %MinTemp2
+    e = findobj("tag", "minTempSlider2");
+    %MinTemp2 = e.value;
+    e = findobj("tag", "instantMinTemp2");
+    e.data(:,2) = %MinTemp2;
 endfunction
 //
-function stopSensor()
-    global %Acquisition
-    %Acquisition = %f;
-endfunction
-//
-function launchSensor()
-    global %MaxTemp
-    global %serial_port
-    global %Acquisition
-    global %time
-    global %temp
-    global %data
-    %Acquisition = %t;
-    readserial(%serial_port);
-    //set(acqButton, "value", 1);
-    //
-    while %Acquisition 
-        values=[];
-        value=ascii(0);
-
-        while(value~=ascii(13)) then
-            value=readserial(%serial_port,1);
-            values=values+value;
-            v=strsubst(values,string(ascii(10)),'')
-            v=strsubst(v,string(ascii(13)),'')
-            dado=evstr(v)
-        end
-        //
-        xinfo("Temp = "+v+"°C / "+string(dado+273.15)+" K");
-        %data = [%data dado]
-        %time = length(%data)-1
-        %temp = dado;
-        updateSensorValue(dado);
-    end
-endfunction
-//
-function updateSensorValue(data)
-    global %MaxTemp
-    global %MinTemp
-    global %time
-    global %temp
-    //
-    e = findobj("tag", "instantSensor");
-    e.data(2) = data;
-    if data > %MaxTemp then
-        e.background = color("red");
-    elseif data < %MinTemp  then
-        e.background = color("blue");
-    else
-        e.background = color("green");
-    end
-    //
-    e = findobj("tag", "minuteSensor");
-    lastPoints = e.data(:, 2);
-    e.data(:, 2) = [data ; lastPoints(1:$-1)];
-    //
-    e = findobj("tag", "hourSensor");
-    lastPoints = e.data(:, 2);
-    e.data(:, 2) = [data ; lastPoints(1:$-1)];
-    //
-    update();
-endfunction
-//
-function update()
-    global %temp
-    global %time
-    //
-    set(tempValue, "string", string(%temp)+"ºC", "fontsize", 25);
-    //
-    set(timeValue, "string", string(%time)+"s", "fontsize", 25);
+function changeMaxTemp2()
+    global %MaxTemp2
+    e = findobj("tag", "maxTempSlider2");
+    %MaxTemp2 = e.value;
+    e = findobj("tag", "instantMaxTemp2");
+    e.data(:,2) = %MaxTemp2;
 endfunction
 //
 function resetDisplay()
@@ -101,47 +195,54 @@ function resetDisplay()
     %time = 0;
     global %temp
     %temp = [];
+    global %temp2
+    %temp2 = [];
     global %data
     %data = [];
+    global %data2
+    %data2 = [];
     global %serial_port
     readserial(%serial_port);
     //
-    //set(acqButton, "value", 0);
     update();
     xinfo(f.figure_name);
     //
     e = findobj("tag", "instantSensor");
     e.data(:, 2) = 0;
-    e = findobj("tag", "minuteSensor");
+    e = findobj("tag", "Sensor1");
     e.data(:, 2) = 0;
-    e = findobj("tag", "hourSensor");
+    e = findobj("tag", "minute1Regulation");
     e.data(:, 2) = 0;
-    e = findobj("tag", "minuteRegulation");
+    //
+    e = findobj("tag", "instantSensor2");
     e.data(:, 2) = 0;
-    e = findobj("tag", "hourRegulation");
+    e = findobj("tag", "Sensor2");
+    e.data(:, 2) = 0;
+    e = findobj("tag", "minute2Regulation");
     e.data(:, 2) = 0;
 endfunction
 //
 function exportValues()
     global %data
+    global %data2
     global %Export
-    if %data == [] then
+    if %data == [] & %data2 == [] then
         return
     end
     tempo = 0:size(%data,2)-1;
-    M = [tempo' %data'];
-    
-    csvWrite(M, "tempData_" + string(%Export) + ".csv", ";", [], "%g");
+    M = [tempo' %data' %data2'];
+
+    csvWrite(M, "../data/tempData_" + string(%Export) + ".csv", ";", [], "%g");
     %Export = %Export+1;
 endfunction
 //
 function popupCallback ()
-   obj = findobj("tag", "acqButton");
-   val = get ( obj, 'value' );
-   
-   if val == 1 then
-       launchSensor();
-   else
-       stopSensor();
-   end
- endfunction
+    obj = findobj("tag", "acqButton");
+    val = get ( obj, 'value' );
+
+    if val == 1 then
+        launchSensor();
+    else
+        stopSensor();
+    end
+endfunction
