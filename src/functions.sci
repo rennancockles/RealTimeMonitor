@@ -10,6 +10,9 @@ function launchSensor()
     global %temp2
     global %data
     global %data2
+    global %stability_time
+    global %stability_value
+    global %warning
     %Acquisition = %t;
     readserial(%serial_port);
     //
@@ -80,6 +83,26 @@ function launchSensor()
             %temp = -1;           
             %temp2 = v2;
             updateSensorValue(-1, v2);
+        end
+        //
+        if (%time>%stability_time) then
+           resp1=0;
+           resp2=0;
+           if (sum(abs(diff(%data($-%stability_time+1 : $)))) < %stability_value) & (%warning(1) == %t) then
+               resp1 = messagebox("Sensor 1 is stable", "Info", "info", ["Continue" "Stop"], "modal")
+           elseif  (sum(abs(diff(%data2($-%stability_time+1 : $)))) < %stability_value) & (%warning(2) == %t) then
+               resp2 = messagebox("Sensor 2 is stable", "Info", "info", ["Continue" "Stop"], "modal")
+           end
+           //
+           if resp1 == 1 then
+               %warning(1) = %f
+           end
+           if resp2 == 1 then
+               %warning(2) = %f
+           end
+           if resp1 == 2 | resp2 == 2 then
+               stopSensor();
+           end
         end
     end
 endfunction

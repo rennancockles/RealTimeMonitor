@@ -8,6 +8,7 @@ mAcq3=uimenu(mAcq,'label', "Reset", "callback", "resetDisplay");
 //
 mSensor1=uimenu(mSetup,'label', "Sensor 1");
 mSensor2=uimenu(mSetup,'label', "Sensor 2");
+mStability=uimenu(mSetup,'label', "Stability");
 //
 mBuffer1=uimenu(mSensor1,'label', "Time Buffer", "callback", "changeBuffer(1)");
 mMinTemp1=uimenu(mSensor1,'label', "Min Temp Display", "callback", "setupMinTemp(1)");
@@ -17,8 +18,11 @@ mBuffer2=uimenu(mSensor2,'label', "Time Buffer", "callback", "changeBuffer(2)");
 mMinTemp2=uimenu(mSensor2,'label', "Min Temp Display", "callback", "setupMinTemp(2)");
 mMaxTemp2=uimenu(mSensor2,'label', "Max Temp Display", "callback", "setupMaxTemp(2)");
 //
+mStabilityValue=uimenu(mStability,'label', "Stability value", "callback", "setupStability(1)");
+mStabilityTime=uimenu(mStability,'label', "Stability time", "callback", "setupStability(2)");
+//
 function changeBuffer(id)
-    newBuffer=evstr(x_dialog('Set new time buffer value: ','300'))
+    newBuffer=evstr(x_dialog('Set new time buffer value (seconds): ','300'))
     //
     if newBuffer == [] then
         return
@@ -118,5 +122,30 @@ function setupMaxTemp(id)
         l.data_bounds = [0, minTempDisplay2; 1, maxTempDisplay2];
         minS.max = maxTempDisplay2;
         maxS.max = maxTempDisplay2;
+    end
+endfunction
+//
+function setupStability(opt)
+    if opt == 1 then
+        newStability=evstr(x_dialog('Set new stability value: ','0.3'))
+        //
+        if newStability == [] then
+            return
+        else
+            global %stability_value
+            %stability_value = newStability;
+        end
+    elseif opt == 2 then
+        newStability=evstr(x_dialog('Set new stability time value (seconds): ','30'))
+        //
+        if newStability == [] then
+            return
+        else
+            global %stability_time
+            global %warning
+            //
+            %warning = [%t, %t];
+            %stability_time = newStability;
+        end
     end
 endfunction

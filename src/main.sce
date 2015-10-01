@@ -8,6 +8,7 @@
 
 close
 clear
+clearglobal
 clc
 
 global %time
@@ -30,6 +31,12 @@ global %MinTemp2
 %MinTemp2 = 20;
 global %Export
 %Export = 0;
+global %stability_time
+%stability_time = 30;
+global %stability_value
+%stability_value = .3;
+global %warning
+%warning = [%t, %t];
 //
 global timeBuffer
 global timeBuffer2
@@ -59,7 +66,7 @@ maxRegulationDisplay2 = maxTempDisplay2 + 273.15;
 //
 exec("..\etc\ScilabLib\Serial_Communication_Toolbox\0.4.1-2\loader.sce", -1)
 //exec("..\etc\ScilabLib\JSON\loader.sce", -1)
-exec("connection.sce", -1)
+//exec("connection.sce", -1)
 exec("monitoring.sce", -1)
 exec("monitoring2.sce", -1)
 exec("5minVar.sce", -1)
