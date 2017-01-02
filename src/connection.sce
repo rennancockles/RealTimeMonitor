@@ -14,7 +14,12 @@ error_number = 999;
 while (error_number <> 0)
     com = com+1;
     try
-        %serial_port=openserial(com,"9600,n,8,1");
+        disp 'com '+string(com)
+        if getos() == 'Linux' then
+            %serial_port=openserial('/dev/ttyACM'+string(com),"9600,n,8,1");
+        else
+            %serial_port=openserial(com,"9600,n,8,1");
+        end
     end 
     [error_message,error_number]=lasterror(%t)
     if com == 10 then
