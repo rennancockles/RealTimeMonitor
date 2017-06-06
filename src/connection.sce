@@ -4,7 +4,7 @@
 //    messagebox(msg, "ERROR", "error");
 //    error(msg);
 //    return;
-//end 
+//end
 ////
 //global %serial_port
 //%serial_port=openserial(port_name,"9600,n,8,1");
@@ -21,11 +21,10 @@ while (error_number <> 0)
             disp ('com '+string(com))
             %serial_port=openserial(com,"9600,n,8,1");
         end
-    end 
+    end
     [error_message,error_number]=lasterror(%t)
     if com == 10 then
         disp("Arduino not found or permission denied")
         abort
     end
 end
-
